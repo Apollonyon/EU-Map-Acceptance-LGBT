@@ -76,6 +76,7 @@ else:
         locations="iso_alpha",
         color="acceptance",
         hover_name="country_name",
+        custom_data="country_name",
         hover_data={'iso_alpha': False, 'acceptance': ':.1f%'},
         scope="europe",
         color_continuous_scale="ice",
@@ -94,8 +95,16 @@ else:
         ),
         font_color="#FAFAFA",
         paper_bgcolor='rgba(0,0,0,0)',
-        plot_bgcolor='rgba(0,0,0,0)'
+        plot_bgcolor='rgba(0,0,0,0)',
+        coloraxis_colorbar=dict(
+        title="Acceptance (%)",   # Sets the title of the legend
+        thicknessmode="pixels", thickness=15, # Sets the thickness in pixels
+        lenmode="pixels", len=300,           # Sets the length in pixels
+        yanchor="middle", y=0.5              # Vertically centers the legend
+        )
     )
+    
+    fig.update_traces(hovertemplate='<b>%{customdata[0]}</b><br>Acceptance: %{z:.1f}%<extra></extra>')
     
     fig.update_geos(
             center={"lat": 54, "lon": 15},
@@ -106,8 +115,20 @@ else:
     st.plotly_chart(fig, use_container_width=True)
 
     with st.expander("View Data Table for this Topic"):
-        st.dataframe(df_filtered[['code', 'acceptance']].sort_values('acceptance', ascending=False))
-    
+        df_display = df_filtered[['country_name', 'acceptance']].rename(
+            columns={'country_name': 'Country', 'acceptance': 'Acceptance (%)'}
+        ).sort_values('Acceptance (%)', ascending=False)
+        
+        # --- THIS IS THE NEW PART ---
+        # Convert the number to a string and manually add the '%' sign.
+        df_display['Acceptance (%)'] = df_display['Acceptance (%)'].astype(str) + '%'
+        # --- END OF NEW PART ---
+
+        # Display the dataframe, now without the column_config
+        st.dataframe(
+            df_display,
+            use_container_width=True
+        )
     st.divider()
     st.markdown(
     """
