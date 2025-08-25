@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import pycountry
 
 # Page Configuration (applied from config.toml) to give the good look woop woop
 st.set_page_config(
@@ -25,6 +26,14 @@ def load_data():
         "Question from sheet 'QB15_4'": "Adoption rights for same-sex couples"
     }
     df['question'] = df['question'].replace(question_mapping)
+    
+    def get_country_name(code):
+        try:
+            return pycountry.countries.get(alpha_2=code).name
+        except AttributeError:
+            return code # Return the original code if not found
+
+    df['country_name'] = df['code'].apply(get_country_name)
 
     # Map 2-letter to 3-letter country codes so Plotly can map them correctly
     code_mapping = {
@@ -66,7 +75,7 @@ else:
         df_filtered,
         locations="iso_alpha",
         color="acceptance",
-        hover_name="code",
+        hover_name="country_name",
         hover_data={'iso_alpha': False, 'acceptance': ':.1f%'},
         scope="europe",
         color_continuous_scale="ice",
